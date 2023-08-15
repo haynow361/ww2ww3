@@ -1,0 +1,27 @@
+import requests
+from functools import lru_cache
+
+API_TOKEN = "YOUR_TOKEN"
+API_URL = "https://api.blockcypher.com/v1"
+
+@lru_cache(maxsize=128)
+def get_api_data(endpoint, params=None):
+    url = f"{API_URL}/{endpoint}" 
+    headers = {'Authorization': f"Token {API_TOKEN}"}
+    response = requests.get(url, headers=headers, params=params)
+
+    if response.status_code == 429:
+        print("Rate limited!")
+        return None
+
+    return response.json()
+
+if __name__ == '__main__':
+
+    blocks = get_api_data('btc/main/blocks/5;6;7')
+    print(blocks[0]['height'])
+
+    forwards = get_api_data('tokens/YOUR_TOKEN/payment-forwards')
+    for forward in forwards:
+        if forward['status'] == 'active':
+            print(forward['input_address'], forward['destination'])
